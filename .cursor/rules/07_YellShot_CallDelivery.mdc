@@ -1,0 +1,753 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# 📞 YellShot PRD – 02: Call Delivery Engine (Twilio)
+
+## 🎯 Purpose
+Manages outbound AI voice calls using Twilio and updates status based on delivery success.
+
+---
+
+## 🧭 YellShot Call Flow Diagram – Call Delivery Engine (Twilio)
+
+```text
+                 ┌────────────────────────────┐
+                 │     Message is Queued      │
+                 └────────────┬───────────────┘
+                              │
+                              ▼
+                 ┌────────────────────────────┐
+                 │    Twilio Call Initiated   │
+                 └────────────┬───────────────┘
+                              │
+              ┌───────────────┴───────────────┐
+              ▼                               ▼
+     ┌──────────────────────┐        ┌───────────────────────┐
+     │ Recipient Answers?   │        │ Recipient Doesn’t     │
+     │  (live human)        │        │ Answer / Call Fails   │
+     └──────────┬───────────┘        └──────────┬────────────┘
+                │ Yes                           │
+                ▼                               ▼
+  ┌─────────────────────────────┐    ┌─────────────────────────────┐
+  │ Play AI Message via TwiML   │    │ Mark attempt failed          │
+  └────────────┬────────────────┘    │ No voicemail left            │
+               │                     └──────────┬──────────────────┘
+               ▼                                ▼
+  ┌─────────────────────────────┐    ┌──────────────────────────────┐
+  │ Record optional response    │    │ Retry? (within SLA window)   │
+  └────────────┬────────────────┘    └────────────┬─────────────────┘
+               │                                   │
+               ▼                                   ▼
+  ┌───────────────────────────────┐     ┌──────────────────────────┐
+  │ Mark as 'delivered' in DB     │     │ Retry Call (next delay)  │
+  └────────────┬──────────────────┘     └────────────┬─────────────┘
+               │                                     │
+               ▼                                     ▼
+  ┌───────────────────────────────────────────┐      │
+  │ Send follow-up SMS with reply link:       │      │
+  │  - If first-time: includes FREE promo     │      │
+  │  - Else: regular reply CTA                │      │
+  └───────────────────────────────────────────┘      │
+               │                                     │
+               ▼                                     ▼
+  ┌───────────────────────────────┐     ┌──────────────────────────┐
+  │ User replies via link (opt-in)│     │ All retries failed?      │
+  └───────────────────────────────┘     └────────────┬─────────────┘
+                                                    Yes
+                                                     ▼
+                                   ┌───────────────────────────────────────┐
+                                   │ Final SMS:                            │
+                                   │  - Text version of message (optional) │
+                                   │  - Free reply promo (if first-time)   │
+                                   └───────────────────────────────────────┘
+```
+
+---
+
+## 🕒 After-Hours Handling – Final Logic (Standard Tier Only)
+
+---
+
+### 🎯 Purpose
+
+Internally delay Standard tier calls during quiet hours (10PM–7AM recipient local time), while allowing all other tiers to be delivered 24/7.
+
+---
+
+### 🕰️ Quiet Hours Definition
+
+- Quiet Hours = **10:00 PM – 7:00 AM (recipient’s local time)**
+- Local time estimated from phone number region (Twilio Lookup)
+
+---
+
+### 🧮 Tier Behavior
+
+- **Standard ($5)** tier:
+  - Delivery is **paused** during quiet hours
+  - Call is queued and resumes at 7:00 AM
+- **All other tiers**:
+  - Delivered **immediately**, even during quiet hours
+
+---
+
+### 📦 Metadata (Logged per Standard-tier Message)
+
+```json
+{
+  "requested_tier": "standard",
+  "is_after_hours": true,
+  "scheduled_for": "2025-06-06T07:00:00-0500",
+  "status": "queued"
+}
+```
+
+---
+
+// 🕒 After-Hours Hold Logic (Standard Tier Only)
+//
+// If the message tier is "standard" ($5),
+// and the current time in the recipient’s local timezone is between 10:00 PM – 7:00 AM,
+// then hold delivery until 7:00 AM local time.
+// All other tiers bypass this restriction and are delivered immediately.
+
+if (tier === 'standard' && isAfterHours(recipientTimeZone)) {
+  scheduleFor = next7amInTimezone(recipientTimeZone);
+  status = 'queued';
+  log("Standard-tier message delayed until morning due to quiet hours");
+}
+
+---
+
+### 🧠 Queue Processor Logic (Standard Tier Quiet Hours)
+
+- If `tier = standard` and current time in recipient’s timezone is between 10:00 PM and 7:00 AM:
+  - Do **not** trigger the outbound call immediately
+  - Instead, set `status = queued`
+  - Set `scheduled_for = next 7:00 AM in recipient’s timezone`
+  - Resume delivery when that time is reached
+
+---
+
+**Example pseudocode:**
+
+```js
+if (tier === 'standard' && isAfterHours(recipientTimeZone)) {
+  scheduleFor = next7amInTimezone(recipientTimeZone);
+  status = 'queued';
+}
+```
+
+---
+
+> Timezone awareness is based on recipient phone prefix via Twilio Lookup API  
+> This logic is internal and silent — users are not shown any delay
+
+---
+
+### ⚠️ SLA Integrity
+
+- Standard tier still promises **delivery within 4–8 hours**
+- Delays due to quiet hours are absorbed within that window
+
+---
+
+### 🧠 Internal Only
+
+- No impact on Public Page UX
+- No toggle or messaging required for users
+- Behavior managed silently by the queue processor
+
+---
+
+## 📤 Post-Call SMS Sequence Logic (Updated)
+
+### 1️⃣ After Successful Call Delivery
+
+- Automatically send follow-up SMS **after successful call**:
+  ```
+  You just got a YellShot. Want to reply anonymously?  
+  Tap here to send your response FREE:  
+  https://yellshot.com/reply/<token>
+  ```
+- Includes:
+  - One-time promo for **free reply**
+  - Link preloaded with original `message_id`
+  - Tracks usage to prevent repeat redemption
+
+---
+
+### 2️⃣ After Failed Call Attempt (No Answer or Declined)
+
+- Immediately send SMS:
+  ```
+  We just tried to deliver a confidential message to you via phone.  
+  Tap to hear it now:  
+  https://yellshot.com/redeem/<token>
+  ```
+- Link opens call-back prompt on web, or triggers retry flow if allowed
+
+---
+
+### 3️⃣ After 24 Hours of Failed Attempts (Final SMS)
+
+- If no call pickup and no user-initiated callback within 24h:
+  - Send final fallback SMS with the message (text version) + reply CTA:
+  ```
+  This message couldn’t be delivered by phone:  
+  “<shortened message preview>...”  
+  Tap to hear the full version + reply FREE:  
+  https://yellshot.com/redeem/<token>
+  ```
+- Includes:
+  - Full or partial message (based on privacy config)
+  - Free reply link with tracking
+  - Final notice that this is the last attempt
+
+---
+
+## 🔐 One-Time Free Reply Logic
+
+### 🎯 Goal
+Prevent abuse of free reply promo while still encouraging first-time engagement.
+
+---
+
+### ✅ Who Gets the Free Promo
+
+- Only recipients **who have never been sent a YellShot before**
+- Determined by checking `queue_history` for any previous `recipient_phone`
+
+---
+
+### 🚫 Who *Does Not* Get It
+
+- If `recipient_phone` **already exists** in `queue_history` table:
+  - No free reply promo
+  - Regular reply pricing applies (same as sending a YellShot)
+
+---
+
+### 📊 Database Logic (Pseudocode)
+
+```sql
+SELECT COUNT(*) FROM queue_history
+WHERE recipient_phone = '<number>'
+```
+
+- If result = 0 → allow free promo
+- Else → deny promo, proceed to payment step
+
+---
+
+### 🧬 SMS Reply Link Handling
+
+- If **promo allowed**:
+  ```
+  Want to reply anonymously?  
+  Tap here to respond FREE:  
+  https://yellshot.com/reply/<token>?promo=1
+  ```
+- If **promo denied**:
+  ```
+  Want to reply anonymously?  
+  Tap here to respond:  
+  https://yellshot.com/reply/<token>
+  ```
+
+> Frontend checks for `promo=1` query param to unlock free usage
+
+---
+
+### 🧾 Metadata Fields (Database)
+
+```json
+{
+  "recipient_phone": "+15555551234",
+  "has_received_before": true,
+  "promo_eligible": false,
+  "reply_token": "abc123",
+  "promo_used": false
+}
+```
+
+---
+
+### 🧠 Anti-Gaming Note
+
+- Token is single-use and locked to `recipient_phone`
+- Free promo flag invalidated upon:
+  - Successful reply purchase
+  - Or expiration window (e.g. 48 hours)
+
+---
+
+## 🧾 SMS Event Tracking (DB Fields)
+
+```json
+{
+  "sms_success_sent_at": "2025-06-05T14:15:00Z",
+  "sms_failed_sent_at": "2025-06-05T14:18:00Z",
+  "sms_final_sent_at": "2025-06-06T14:12:00Z",
+  "reply_token": "xyz789",
+  "promo_used": false
+}
+```
+
+---
+
+## 🎯 Goals
+
+- Maximize engagement and reply funnel
+- Avoid user friction — no consent step for SMS
+- Automate logical progression: Success ➜ Retry ➜ Final Fallback
+- Deliver **at least one form** of the message in all outcomes
+
+---
+
+## 📲 Twilio Call Flow
+
+- Triggered by queue processor
+- Uses `voice.xml` or dynamic TwiML URL
+- Updates:
+  - `in_progress`: call initiated
+  - `delivered`: call succeeded
+  - `undelivered`: all retries failed
+
+---
+
+## 📞 Twilio Webhook Handling
+
+- Webhook receives call events:  
+  `initiated`, `ringing`, `in-progress`, `completed`, `failed`, `no-answer`  
+- On call start: set `message.status = in_progress`  
+- On answer: start audio playback  
+- On completion: mark `delivered`  
+- Record recipient’s voice (if response enabled)  
+- Store `Twilio RecordingUrl` in `audio_url`  
+- Validate all requests using `X-Twilio-Signature`  
+
+---
+
+## 📥 Recording & Playback
+
+- Twilio call is recorded via `<Record>` element or TwiML attribute
+- Recording is:
+  - Automatically stored by Twilio
+  - URL returned via webhook (`RecordingUrl`)
+  - Saved to `call.audio_url` in database
+- Admin panel:  
+  - Shows downloadable playback link in queue history  
+  - Button: `▶ Play Response` and `⬇ Download MP3`  
+- If user gave a response:
+  - File labeled `reaction.mp3`
+- Final MP3 URL is also accessible in:
+  - Sender dashboard (if allowed by privacy setting)
+  - Internal QA audit view
+
+---
+
+## 📵 No Voicemail Policy
+
+- If recipient does **not answer** the call:  
+  - **Do not leave a voicemail**  
+  - Disconnect cleanly without message playback  
+  - Reason: maintain mystery, avoid unwanted trace, preserve anonymity tone
+
+---
+
+## 📤 Post-Call SMS (After Answer)
+
+- If call is **answered** and message is **delivered**:
+  - Send **follow-up SMS** immediately after call ends:
+    ```
+    Would you like to reply to the confidential message?  Send a YellSpot anonymously:
+    https://yellshot.com/reply/<message_id_or_token>
+    ```
+  - SMS includes:
+    - Anonymized reply link
+    - Token or message ID that ties to original sender
+
+---
+
+## 🧬 Reply Linking Logic
+
+- On successful call completion:
+  - Store `message_id` or `reply_token` in DB
+  - Attach `original_sender_id` to call record
+  - Construct reply URL: `https://yellshot.com/reply/<reply_token>`
+  - Log that SMS was sent (timestamp, delivery status)
+
+---
+
+## 📁 Reply Metadata Fields (Database)
+
+```json
+{
+  "message_id": "abc123",
+  "reply_token": "xYz789",
+  "original_sender_id": "user_42",
+  "reply_url": "https://yellshot.com/reply/xYz789",
+  "sms_sent_at": "2025-06-05T14:17:00Z"
+}
+```
+
+---
+
+## 🔗 Public Page Reply Handling (To Document Separately)
+
+> Note: The following logic belongs in the Public Page MDC but is tightly linked here.
+
+- The `/reply/<reply_token>` route should:
+  - Auto-fill “To: Anonymous Sender” (mapped via token)
+  - Let recipient:
+    - Type a reply message
+    - Select persona
+    - Purchase YellShot reply
+  - Ensure new reply is tied to `original_sender_id`
+
+---
+
+## 🔁 Retry Logic
+
+- Up to **3 attempts**  
+- Delays: **5min → 15min → 30min**  
+- Retries only within `expires_at` SLA window  
+- Final failure marks status = `undelivered`  
+
+---
+
+## ⚠️ Edge Case Handling
+
+| Condition       | Action                                                  |
+|----------------|----------------------------------------------------------|
+| Call failed     | Retry if within retry count + SLA window                |
+| No answer       | Retry with increasing delay                             |
+| User declined   | Mark as `undelivered` if decline confirmed              |
+| Invalid number  | Mark as `undelivered`, no retry                         |
+| Twilio error    | Retry once, escalate if still failing                   |
+
+---
+
+## 🔐 Webhook Security
+
+- Validate every incoming webhook against `X-Twilio-Signature`  
+- Use signing secret stored in secure environment variable  
+- Log validation failures with timestamp + IP + reason  
+
+---
+
+## 📦 Call Record Contents
+
+```json
+{
+  "twilio_sid": "CAxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  "call_duration": 62,
+  "status": "delivered",
+  "audio_url": "https://api.twilio.com/recordings/abc123",
+  "timestamp": "2025-06-05T14:12:00Z",
+  "attempt": 2
+}
+```
+
+See full bundle.json format under Call Bundle Archival
+
+---
+
+## ⏱️ Delivery Tier SLA Matrix
+
+| Tier       | Max Attempts | Expires After | Retry Delays            |
+|------------|--------------|---------------|--------------------------|
+| Free       | 1            | 1 hour        | 0 min                    |
+| Standard   | 2            | 4 hours       | 5 min, 15 min            |
+| Express    | 3            | 30 minutes    | 2 min, 5 min, 10 min     |
+| Guaranteed | 3            | 1 hour        | 3 min, 7 min, 12 min     |
+
+> Retry stops as soon as `expires_at` is passed.
+
+---
+
+## 🧪 Twilio Call QA Checklist
+
+- ✅ `voice.xml` or TwiML generated correctly  
+- ✅ Recording enabled and stored  
+- ✅ `X-Twilio-Signature` validated  
+- ✅ Retry window honored  
+- ✅ Accurate status field written to DB  
+- ✅ Response audio (if present) saved properly  
+- ✅ Debug logs for failures written with context  
+
+---
+
+## 📁 Audio Naming & Storage Format
+
+- Stored in S3: `yellshot/audio/{call_id}/{filename}.mp3`  
+
+| File            | Contents                        |
+|-----------------|----------------------------------|
+| ai_message.mp3  | Generated AI message             |
+| reaction.mp3    | User’s voice reaction (if captured) |
+| final_call.mp3  | Concatenated message + response  |
+
+Example URL:  
+`https://cdn.yellshot.com/audio/abc123/final_call.mp3`
+
+---
+
+## 📤 SMS Fallback (Optional)
+
+- If call fails 3 times and user selected fallback:  
+  Send SMS with preview + CTA link:
+
+```
+Your anonymous message couldn’t be delivered by phone. Click to view it online:
+https://yellshot.com/redeem/abc123
+```
+
+> Only available for Standard, Express, and Guaranteed tiers.
+
+---
+
+## 📊 Call Status Table (Full Lifecycle)
+
+| Status        | Description                                                                 |
+|---------------|-----------------------------------------------------------------------------|
+| queued        | Message is scheduled for delivery, but not yet triggered.                  |
+| in_progress   | Outbound call is in progress or currently playing message.                 |
+| delivered     | Message was successfully delivered via call and received by recipient.     |
+| undelivered   | All attempts failed, expired SLA window, or recipient declined the call.    |
+| expired       | Message timed out before any call attempt could be made.                   |
+| sms_fallback  | Call failed, and SMS fallback was triggered (if allowed by tier).           |
+| cancelled     | Message was manually cancelled before delivery attempt.                    |
+| error         | Unexpected failure (e.g., Twilio outage, server crash). Requires manual review. |
+
+---
+
+## 📡 Observability & Monitoring
+
+- **Real-time Metrics**:  
+  - Call success rate  
+  - Average delivery time  
+  - Retry frequency per tier  
+
+- **Alerts**:  
+  - Error rate > 5% in 15min window  
+  - Repeated undeliverable calls to same number  
+  - Twilio API downtime or throttling  
+
+- **Dashboard**:  
+  - Supabase logs, Grafana, or internal call monitor UI  
+
+---
+
+## 🧰 DevOps & Deployment Notes
+
+- **Infrastructure**:  
+  - Use Supabase Edge Functions or AWS Lambda  
+  - Queue isolation to prevent retry blocking  
+
+- **Environment Configuration**:  
+  - `dev`: Twilio test credentials, internal numbers  
+  - `staging`: near-live simulations  
+  - `prod`: verified Twilio numbers  
+
+- **Secrets Management**:  
+  - `.env` or Supabase secret store  
+  - Twilio credentials, S3 keys, signing secrets  
+
+---
+
+## 🤖 Testing Suite
+
+- **Unit Tests**:  
+  - Call initiation logic  
+  - Webhook status updates  
+  - Retry trigger conditions  
+
+- **Integration Tests**:  
+  - Simulate Twilio test flows end-to-end  
+
+- **E2E Tests**:  
+  - UI → call trigger → delivery verification  
+  - Assert audio files are stored  
+
+---
+
+## 🧩 Extensibility Hooks
+
+- `onCallStarted(call_id)`  
+- `onMessageDelivered(call_id)`  
+- `onCallFailed(call_id, reason)`  
+
+Emit events to:  
+- Internal analytics pipeline  
+- Customer audit logs  
+- Optional outbound webhooks  
+
+---
+
+## 🔄 Post-Delivery Actions
+
+- Notify sender via SMS/email on delivery/failure  
+- Provide reply link or anonymous response CTA  
+- Show status in sender dashboard UI  
+
+---
+
+## 📘 API Reference
+
+### POST `/api/call/trigger`
+
+```json
+{
+  "recipient": "+15555555555",
+  "message": "You forgot our anniversary...",
+  "persona_id": "ms_closure",
+  "tier": "guaranteed",
+  "fallback_sms": true
+}
+```
+
+fallback_sms only applies to tiers Standard and above
+
+Returns:
+
+```json
+{
+  "call_id": "abc123",
+  "status": "queued",
+  "estimated_delivery": "2025-06-05T14:30:00Z"
+}
+```
+
+---
+
+## 📞 YellShot PRD – 02: Call Delivery Engine (Twilio) – DIAMOND++
+
+---
+
+## 🛡️ Abuse Protection & Rate Limits
+
+- **Rate limiting**: Max 5 call attempts per IP/hour  
+- **Twilio Lookup API**: Validate phone numbers before queuing  
+- **Anomaly detection**:  
+  - Detect rapid retries to same number  
+  - Flag messages with banned keywords or spam patterns  
+- **CAPTCHA**: Enforce on public form to prevent bot spam
+
+---
+
+## 🧠 Smart Retry Optimizer
+
+- **Dynamic retry scheduling**:  
+  - Optimize retry times based on historical success by region  
+  - Avoid retries during non-business hours or user-defined “quiet hours”  
+- **Time zone detection**:  
+  - Infer recipient’s local time from phone prefix or carrier  
+  - Reschedule retries intelligently
+
+---
+
+## 🧬 Metadata Enrichment
+
+- Use **Twilio Lookup API** to enrich recipient metadata:  
+  - `carrier`, `line_type`, `is_mobile`, `country_code`  
+- Store enriched fields with each call record  
+- Use enriched metadata to determine retry strategy:
+  - No retry for `line_type: voip` or `carrier: unknown` if fallback is enabled
+
+---
+
+## 🛑 Consent & Compliance Log
+
+- Log consent and compliance details per message:  
+  ```json
+  {
+    "consent_to_call": true,
+    "consent_to_record": true,
+    "ip_address": "192.0.2.45",
+    "user_agent": "Mozilla/5.0",
+    "timestamp": "2025-06-05T14:01:00Z"
+  }
+  ```
+- Geo-block or hard-deny delivery to restricted regions (GDPR, CCPA, TCPA, etc.)
+- Auto-expire consent logs after retention window (configurable, e.g., 18 months)
+
+---
+
+## 📂 Call Bundle Archival
+
+- After each call, create an S3 folder: `yellshot/audio/{call_id}/`  
+- Store:
+  - `ai_message.mp3`
+  - `reaction.mp3`
+  - `final_call.mp3`
+  - `bundle.json`:
+
+```json
+{
+  "call_id": "abc123",
+  "status": "delivered",
+  "tier": "express",
+  "twilio_sid": "CAxxxxx",
+  "call_duration": 62,
+  "persona": "Dr. Confession",
+  "call_type": "breakup",
+  "recording_url": "https://api.twilio.com/recordings/xyz",
+  "response_url": "https://cdn.yellshot.com/audio/abc123/reaction.mp3",
+  "timestamp": "2025-06-05T14:12:00Z",
+  "retry_attempts": 2
+}
+```
+
+- Optional: zip archive auto-generated for user download
+
+---
+
+## 🧭 Admin Panel Enhancements
+
+- Live call queue dashboard:
+  - Filter by `status`, `tier`, `persona`, `prefix`
+  - Retry, cancel, or redeliver from UI
+- Call Logs:
+  - Redacted view of sensitive messages
+  - IP, User Agent, and consent data review
+- Manual SMS fallback override
+- QA override flags (force "delivered" or escalate for review)
+
+---
+
+## 🚨 Failover Strategy
+
+- **Twilio API Timeout Handling**:
+  - Retry API call with exponential backoff (up to 3x)
+  - Trigger dev alert if API fails > 1 minute window
+- **Missing Audio**:
+  - Log `status: error`
+  - Send fallback SMS with failure notice
+  - Alert admin for manual intervention
+
+---
+
+## 🧩 Event Hooks (Extended)
+
+- `onCallStarted(call_id)`
+- `onCallDelivered(call_id)`
+- `onCallFailed(call_id, reason)`
+- `onConsentRecorded(call_id, consent_object)`
+- `onFallbackSMSsent(call_id)`
+
+All events can be published via Supabase Realtime or internal pub/sub bus.
+
+---
+
+## 🌀 Optional Future Enhancements (Parking Lot)
+
+- AI-based voice transcription of recipient response  
+- Sentiment analysis + toxicity filter on responses  
+- Persona tone analysis: did message match intended emotion?  
+- Replay browser widget for senders to replay call with waveform + transcript
+
+---

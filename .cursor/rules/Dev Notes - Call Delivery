@@ -1,0 +1,87 @@
+## 🛠️ Dev Notes – Call Delivery Engine
+
+---
+
+## 🧠 Quiet Hours Delay Logic (Standard Tier Only)
+
+```js
+// If Standard-tier message comes in during Quiet Hours (10PM–7AM local time),
+// queue it for delivery at 7:00 AM in recipient's timezone.
+if (tier === 'standard' && isAfterHours(recipientTimeZone)) {
+  scheduleFor = next7amInTimezone(recipientTimeZone);
+  status = 'queued';
+}
+```
+
+---
+
+## 🧰 Helper Functions (using luxon)
+
+```js
+const { DateTime } = require("luxon");
+
+function isAfterHours(timezone) {
+  const now = DateTime.now().setZone(timezone);
+  const hour = now.hour;
+  return (hour >= 22 || hour < 7);
+}
+
+function next7amInTimezone(timezone) {
+  const now = DateTime.now().setZone(timezone);
+  let next7am = now.set({ hour: 7, minute: 0, second: 0, millisecond: 0 });
+
+  if (now.hour >= 7) {
+    next7am = next7am.plus({ days: 1 });
+  }
+
+  return next7am.toISO(); // "2025-06-06T07:00:00-0500"
+}
+```
+
+---
+
+## ✅ Usage Example
+
+if (tier === 'standard' && isAfterHours(recipientTimeZone)) {
+  const scheduleFor = next7amInTimezone(recipientTimeZone);
+  message.status = 'queued';
+  message.scheduled_for = scheduleFor;
+  console.log(`Queued until morning: ${scheduleFor}`);
+}
+
+---
+
+## 🔐 Dependencies
+
+- `luxon` for timezone-safe datetime logic  
+- Twilio Lookup API to determine recipient’s region (e.g., `+61`, `+1`, etc.)
+
+---
+
+> Keep this logic modular — it will be reused for global expansion, SLA window enforcement, and future smart retry scheduling.
+
+---
+
+## 📦 Placement Context
+
+queue-processor.js (or similar)
+
+function handleMessage(message) {
+  const { tier, recipientPhone } = message;
+
+  // Lookup recipient's timezone (via Twilio Lookup or internal mapping)
+  const recipientTimeZone = getTimeZoneForPhone(recipientPhone);
+
+  // ✅ Insert Quiet Hours logic here
+  if (tier === 'standard' && isAfterHours(recipientTimeZone)) {
+    const scheduleFor = next7amInTimezone(recipientTimeZone);
+    message.status = 'queued';
+    message.scheduled_for = scheduleFor;
+    console.log(`Standard-tier message delayed until morning: ${scheduleFor}`);
+    return saveToQueue(message); // Do not call yet
+  }
+
+  // 🚀 For all other tiers or normal hours:
+  initiateCallImmediately(message);
+}
+

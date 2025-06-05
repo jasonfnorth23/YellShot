@@ -1,0 +1,25 @@
+const { DateTime } = require("luxon");
+
+/**
+ * Checks if the current local time in recipient's timezone is within quiet hours (10PM–7AM).
+ */
+function isAfterHours(timezone) {
+  const now = DateTime.now().setZone(timezone);
+  const hour = now.hour;
+  return (hour >= 22 || hour < 7);
+}
+
+/**
+ * Returns the next 7:00 AM in the recipient's local timezone.
+ */
+function next7amInTimezone(timezone) {
+  const now = DateTime.now().setZone(timezone);
+  let next7am = now.set({ hour: 7, minute: 0, second: 0, millisecond: 0 });
+
+  if (now.hour >= 7) {
+    // If it’s past 7AM already, move to next day
+    next7am = next7am.plus({ days: 1 });
+  }
+
+  return next7am.toISO(); // Returns ISO 8601 string (e.g., "2025-06-06T07:00:00-0500")
+}
