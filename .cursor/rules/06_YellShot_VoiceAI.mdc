@@ -10,19 +10,18 @@ Defines how the Voice AI system delivers messages using fictional personas, pre-
 
 ---
 
-## 🎭 Call Type to Persona Map
+## 🎭 Call Type to Persona Map (Simplified 1M / 1F)
 
-| **Call Type**               | **Male Personas**                                     | **Female Personas**                                 |
-|----------------------------|--------------------------------------------------------|------------------------------------------------------|
-| Breakup or Goodbye         | Agent Farewell, Doctor Detachment                     | Lady Letdown, The Matriarch of Moving On             |
-| Confession or Apology      | The Absolver Agent, Reverend Remorse                  | Sister Sorry, The Countess of Contrition             |
-| Roast or Savage Burn       | Captain Cutdeep, Agent Verbal Assassin                | The Empress of Evisceration, Lady Scorn              |
-| Petty Grievance            | Reverend Petty, Doctor Gripe                          | Mother Malcontent, Auntie Whine                      |
-| Birthday / Celebration     | The Maestro of Cheer, Captain Confetti                | Baroness of Balloons, DJ Glitterbomb                 |
-| Weird or Surreal           | Professor Reality Bender, Doctor Paradox              | The Oracle of Broken TVs, Miss Dissonance            |
-| Gratitude / Encouragement  | The Minister of Motivation, The Ambassador of Appreciation | Lady Uplift, The Hype Nun                       |
-| Revenge Message            | The Vice Principal of Pain, Commander Karma           | Madame Payback, The Widow of Wreckage                |
-
+| **Call Type**               | **Male Persona**               | **Female Persona**                |
+|----------------------------|--------------------------------|-----------------------------------|
+| Breakup or Goodbye         | Agent Farewell                 | Lady Letdown                      |
+| Confession or Apology      | Reverend Remorse               | Sister Sorry                      |
+| Roast or Savage Burn       | Captain Cutdeep                | The Empress of Evisceration       |
+| Petty Grievance            | Doctor Gripe                   | Mother Malcontent                 |
+| Birthday / Celebration     | The Maestro of Cheer           | DJ Glitterbomb                    |
+| Weird or Surreal           | Professor Reality Bender       | The Oracle of Broken TVs          |
+| Gratitude / Encouragement  | The Minister of Motivation     | Lady Uplift                       |
+| Revenge Message            | Commander Karma                | Madame Payback                    |
                                                                                                                                  |
 ---
 

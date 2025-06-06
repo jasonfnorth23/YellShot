@@ -1,0 +1,325 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>YellShot.com</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-white min-h-screen font-sans">
+  <!-- Header with logo and yellow background -->
+  <header class="w-full bg-[#FFD600]" style="height:96px; position:fixed; top:0; left:0; z-index:50;">
+    <div class="max-w-2xl mx-auto px-4 h-full flex items-center">
+      <img src="yellshot-logo.png" alt="YellShot.com" class="h-20 object-contain" />
+    </div>
+  </header>
+
+  <!-- Tagline Section (full width, dark mode, flush to header) -->
+  <div class="w-full border-b border-gray-800 bg-gray-900 mt-[96px] mb-2">
+    <div class="max-w-2xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between px-4 py-8">
+      <div class="flex-1 md:pr-8 flex flex-col justify-center">
+        <h1 class="text-4xl font-extrabold text-white mb-2 leading-tight">Let AI make the call.</h1>
+        <p class="text-2xl font-bold text-gray-200 leading-tight mb-1">Breakups. Confessions. Roasts. Birthdays.</p>
+        <p class="text-2xl font-bold text-gray-200 leading-tight">All delivered by an anonymous AI Agent<br>— with a ridiculous persona.</p>
+      </div>
+      <div class="flex-shrink-0 md:mt-0 flex flex-col items-center">
+        <img src="captain-cutdeep-150x150.png" alt="Captain Cutdeep" class="w-40 h-40 object-cover rounded bg-white" />
+        <div class="mt-4 flex w-40 space-x-4">
+          <button type="button" class="flex-1 flex items-center justify-center bg-black border border-white text-white rounded p-0 h-16 hover:bg-gray-800 focus:outline-none">
+            <svg class="w-10 h-10" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><polygon points="6,4 20,12 6,20"/></svg>
+          </button>
+          <button type="button" class="flex-1 flex items-center justify-center bg-black border border-white text-white rounded p-0 h-16 hover:bg-gray-800 focus:outline-none">
+            <svg class="w-10 h-10" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><polygon points="4,4 14,12 4,20"/><polygon points="10,4 20,12 10,20"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add top padding to main content to account for fixed header -->
+  <main class="max-w-2xl mx-auto px-4 pt-[20px]">
+    <!-- Tabs Section -->
+    <div class="w-full flex border-b border-gray-400 mb-8">
+      <button id="tabForm" class="flex-1 py-3 text-2xl font-bold border-t border-l border-r rounded-tl rounded-tr bg-gray-200 text-black focus:outline-none" style="border-bottom: none;">Send a YellShot!</button>
+      <button id="tabFAQ" class="flex-1 py-3 text-2xl font-bold border-t border-l border-r rounded-tl rounded-tr bg-white text-black focus:outline-none" style="border-bottom: none;">FAQ</button>
+    </div>
+
+    <!-- Form Section (tab content) -->
+    <div id="formTabContent">
+      <!-- Step 1 -->
+      <div class="flex items-start mb-6">
+        <span class="text-4xl font-bold text-gray-900 mr-4 mt-1 min-w-[2rem] text-left">1</span>
+        <div class="flex-1 w-full">
+          <div class="flex flex-col md:flex-row md:space-x-8 w-full">
+            <div class="flex-1 mb-4 md:mb-0">
+              <label for="callType" class="block font-bold text-xl text-gray-800 mb-1">Type of Call</label>
+              <select id="callType" name="callType" class="w-full max-w-lg border border-gray-400 rounded px-3 py-2" required>
+                <option>Roast or Savage Burn</option>
+                <option>Breakup or Goodbye</option>
+                <option>Confession or Apology</option>
+                <option>Flirty Confession / Crush</option>
+                <option>Revenge Message</option>
+                <option>Petty Grievance</option>
+                <option>Weird or Surreal</option>
+                <option>Gratitude / Encouragement</option>
+                <option>Birthday / Celebration</option>
+                <option>Custom</option>
+              </select>
+            </div>
+            <div class="flex-1">
+              <label for="persona" class="block font-bold text-xl text-gray-800 mb-1">Caller Personality</label>
+              <select id="persona" name="persona" class="w-full max-w-lg border border-gray-400 rounded px-3 py-2" required></select>
+              <input id="customPersona" name="customPersona" type="text" class="w-full max-w-lg border border-gray-400 rounded px-3 py-2 mt-2 hidden" placeholder="Enter Name" required />
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Step 2 -->
+      <div class="flex items-start mb-6">
+        <span class="text-4xl font-bold text-gray-900 mr-4 mt-1 min-w-[2rem] text-left">2</span>
+        <div class="flex-1 w-full">
+          <div class="flex flex-col md:flex-row md:space-x-8 w-full">
+            <div class="flex-1 mb-4 md:mb-0">
+              <label for="recipientName" class="block font-bold text-xl text-gray-800 mb-1">Name of Target</label>
+              <input id="recipientName" name="recipientName" type="text" class="w-full max-w-lg border border-gray-400 rounded px-3 py-2" required placeholder="John Doe" />
+            </div>
+            <div class="flex-1">
+              <label for="recipientPhone" class="block font-bold text-xl text-gray-800 mb-1">Phone of Target</label>
+              <input id="recipientPhone" name="recipientPhone" type="tel" class="w-full max-w-lg border border-gray-400 rounded px-3 py-2" required placeholder="(555) 555-5555" />
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Step 3 -->
+      <div class="flex items-start mb-6">
+        <span class="text-4xl font-bold text-gray-900 mr-4 mt-1 min-w-[2rem] text-left">3</span>
+        <div class="flex-1 w-full">
+          <label for="message" class="block font-bold text-xl text-gray-800 mb-1">Message</label>
+          <span class="block text-sm text-gray-500 mb-1">You can stay anonymous — or include your name if you want. 500 character limit.</span>
+          <textarea id="message" name="message" maxlength="500" rows="5" class="w-full border border-gray-400 rounded px-3 py-2 resize-none" required></textarea>
+          <div class="mt-8 text-center">
+            <span class="italic text-2xl font-bold text-gray-900">Ready to queue your call?</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAQ Section (tab content, hidden by default) -->
+    <div id="faqTabContent" class="hidden">
+      <section class="bg-white rounded shadow p-8 pt-4 mb-12">
+        <div class="space-y-6 text-lg text-gray-800">
+          <div>
+            <p class="font-bold mb-1">WTF is this?</p>
+            <p>It's called YellShot — a platform that lets you send anonymous voice messages to someone's phone, delivered by an AI-powered character like Captain Cutdeep or Sister Sorry.</p>
+            <p class="mt-2">Think of it as outsourcing your awkward, savage, or ridiculous message to a fictional call center… so you don't have to say it yourself.</p>
+            <p class="mt-2">Breakups, roasts, confessions, birthday chaos — we make the call so you can stay mysterious.</p>
+          </div>
+          <div>
+            <p class="font-bold mb-1">Do I get proof the message was received?</p>
+            <p>Yes! If they answer or call back, we record the call — and their reaction is often hilarious. You'll get the audio by email. If they ghost entirely, we'll still confirm that the text version was delivered.</p>
+          </div>
+          <div>
+            <p class="font-bold mb-1">What if the call doesn't go through?</p>
+            <ul class="list-disc pl-6">
+              <li>If they don't answer or hang up, we send a callback link via text (valid for 10 days)</li>
+              <li>We retry the call 1 hour later</li>
+              <li>If they still don't respond, your message is sent via text as a last resort</li>
+            </ul>
+          </div>
+          <div>
+            <p class="font-bold mb-1">What is the success rate?</p>
+            <ul class="list-disc pl-6">
+              <li>99% of messages are delivered:</li>
+              <li>50% pick up on the first call</li>
+              <li>30% click the callback link</li>
+              <li>19% get the message via text</li>
+              <li>Fewer than 1% fail due to rare technical issues</li>
+            </ul>
+          </div>
+          <div>
+            <p class="font-bold mb-1">Are failures refunded?</p>
+            <p>No. To prevent abuse, we don't offer refunds for undelivered messages — otherwise trolls could game the system.<br />That said, with our 99% success rate, you're unlikely to need one.</p>
+          </div>
+          <div>
+            <p class="font-bold mb-1">How will the recipient know it's legit?</p>
+            <p>Each call starts with a surreal-but-official intro like:<br /><span class="italic">"This is Captain Cutdeep from the Bureau of Brutal Honesty..."</span><br />We also send a follow-up text confirming it came from YellShot.com.</p>
+          </div>
+          <div>
+            <p class="font-bold mb-1">Can I stay anonymous?</p>
+            <p>Yes. You don't have to include your name unless you want to.<br />The persona delivers your message — they won't know it's you (unless you confess).</p>
+          </div>
+          <div>
+            <p class="font-bold mb-1">What if they cry?</p>
+            <p>Good. That means it worked.<br />(If they laugh instead, that's fine too.)</p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Order and Payment Section (only in form tab) -->
+  <div id="orderPaymentSection" class="w-full bg-gray-100 border-t border-gray-300 pt-8 pb-2">
+    <div class="max-w-2xl mx-auto px-4 mb-8">
+      <h3 class="text-xl font-extrabold text-gray-900 mb-2">Order the YellShot!</h3>
+      <p class="text-gray-700 mb-2">All call requests are put in a queue and processed on a FIFO basis (first in, first out).</p>
+      <p class="italic text-gray-600 mb-4">Pay more to skip the line.</p>
+      <div class="flex justify-between items-end mb-2">
+        <h4 class="text-base font-bold text-gray-900">One-Time Fee</h4>
+        <span class="text-base font-bold text-gray-900">Call placed within:</span>
+      </div>
+      <div class="space-y-3 mb-4">
+        <div class="flex items-center justify-between">
+          <label class="flex items-center space-x-2">
+            <input type="radio" name="orderType" value="standard" class="accent-black" checked>
+            <span class="font-bold">$5</span>
+            <span class="font-bold">Standard Call</span>
+          </label>
+          <span class="text-gray-700">4 - 8 hours</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <label class="flex items-center space-x-2">
+            <input type="radio" name="orderType" value="expedited" class="accent-black">
+            <span class="font-bold">$20</span>
+            <span class="font-bold">Expedited Call</span>
+          </label>
+          <span class="text-gray-700">1 hour</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <label class="flex items-center space-x-2">
+            <input type="radio" name="orderType" value="front" class="accent-black">
+            <span class="font-bold">$50</span>
+            <span class="font-bold">Front of the Line</span>
+          </label>
+          <span class="text-gray-700">A few minutes</span>
+        </div>
+      </div>
+    </div>
+    <!-- Payment Section -->
+    <section class="max-w-xl mx-auto bg-white shadow-md rounded p-6 mb-12">
+      <div class="mb-4 flex flex-col md:flex-row md:space-x-8">
+        <div class="flex-1 mb-4 md:mb-0">
+          <label for="email" class="block font-bold text-xl text-gray-800 mb-1">Your Email</label>
+          <input type="email" id="email" name="email" placeholder="john@doe.com" class="w-full border border-gray-300 rounded px-3 py-2" required>
+        </div>
+        <div class="flex-1">
+          <label for="promo" class="block font-bold text-xl text-gray-800 mb-1">Promo Code</label>
+          <input type="text" id="promo" name="promo" placeholder="" class="w-full border border-gray-300 rounded px-3 py-2">
+        </div>
+      </div>
+      <div class="mb-4">
+        <span class="block font-bold text-xl text-gray-800 mb-1">Payment Details</span>
+        <label class="block text-sm text-gray-600 mb-1">Card information</label>
+        <div class="flex items-center space-x-2 mb-2">
+          <input type="text" maxlength="19" placeholder="1234 1234 1234 1234" class="w-2/3 border border-gray-300 rounded px-3 py-2" />
+          <img src="https://img.icons8.com/color/32/000000/visa.png" class="h-6" alt="Visa"/>
+          <img src="https://img.icons8.com/color/32/000000/mastercard.png" class="h-6" alt="Mastercard"/>
+          <img src="https://img.icons8.com/color/32/000000/amex.png" class="h-6" alt="Amex"/>
+        </div>
+        <div class="flex space-x-2 mb-2">
+          <input type="text" maxlength="5" placeholder="MM / YY" class="w-1/2 border border-gray-300 rounded px-3 py-2" />
+          <input type="text" maxlength="4" placeholder="CVC" class="w-1/2 border border-gray-300 rounded px-3 py-2" />
+        </div>
+        <label class="inline-flex items-center mt-2">
+          <input type="checkbox" checked class="form-checkbox mr-2">
+          <span class="text-sm">Billing address is same as shipping</span>
+        </label>
+        <label class="inline-flex items-center mt-2 block">
+          <input type="checkbox" class="form-checkbox mr-2">
+          <span class="text-sm">Save my info for secure 1-click checkout<br><span class="text-gray-400">Pay faster on SNB and thousands of sites.</span></span>
+        </label>
+      </div>
+      <button class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 rounded mt-4 transition">Pay &amp; Send YellShot!</button>
+    </section>
+  </div>
+
+  <footer class="w-full py-4 text-center text-sm text-gray-900 bg-[#FFD600]">
+    <p>© Copyright 2024 - <script>document.write(new Date().getFullYear())</script>, YellShot, Inc. All rights reserved. | <a href="#" class="underline hover:text-gray-600">Privacy Policy</a></p>
+  </footer>
+
+  <script>
+  const personaOptions = {
+    "Breakup or Goodbye": ["Agent Farewell", "Lady Letdown"],
+    "Confession or Apology": ["Reverend Remorse", "Sister Sorry"],
+    "Roast or Savage Burn": ["Captain Cutdeep", "The Empress of Evisceration"],
+    "Petty Grievance": ["Doctor Gripe", "Mother Malcontent"],
+    "Flirty Confession / Crush": [], // No options in table, leave empty or add as needed
+    "Birthday / Celebration": ["The Maestro of Cheer", "DJ Glitterbomb"],
+    "Weird or Surreal": ["Professor Reality Bender", "The Oracle of Broken TVs"],
+    "Gratitude / Encouragement": ["The Minister of Motivation", "Lady Uplift"],
+    "Revenge Message": ["Commander Karma", "Madame Payback"],
+  };
+
+  function getAllPersonas() {
+    const all = Object.values(personaOptions).flat().filter(Boolean);
+    return Array.from(new Set(all));
+  }
+
+  function updatePersonaOptions() {
+    const callType = document.getElementById('callType').value;
+    const personaSelect = document.getElementById('persona');
+    const customInput = document.getElementById('customPersona');
+    personaSelect.innerHTML = '';
+    if (callType === 'Custom') {
+      personaSelect.classList.remove('hidden');
+      customInput.classList.add('hidden');
+      customInput.required = false;
+      getAllPersonas().forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p;
+        opt.textContent = p;
+        personaSelect.appendChild(opt);
+      });
+    } else if (personaOptions[callType]) {
+      personaSelect.classList.remove('hidden');
+      customInput.classList.add('hidden');
+      customInput.required = false;
+      personaOptions[callType].forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p;
+        opt.textContent = p;
+        personaSelect.appendChild(opt);
+      });
+    } else {
+      personaSelect.classList.remove('hidden');
+      customInput.classList.add('hidden');
+      customInput.required = false;
+      const opt = document.createElement('option');
+      opt.value = '';
+      opt.textContent = 'No personas available';
+      opt.disabled = true;
+      personaSelect.appendChild(opt);
+    }
+  }
+  document.getElementById('callType').addEventListener('change', updatePersonaOptions);
+  window.addEventListener('DOMContentLoaded', updatePersonaOptions);
+
+  // Tab switching logic
+  const tabForm = document.getElementById('tabForm');
+  const tabFAQ = document.getElementById('tabFAQ');
+  const formTabContent = document.getElementById('formTabContent');
+  const faqTabContent = document.getElementById('faqTabContent');
+  const orderPaymentSection = document.getElementById('orderPaymentSection');
+
+  tabForm.addEventListener('click', function() {
+    tabForm.classList.add('bg-gray-200');
+    tabForm.classList.remove('bg-white');
+    tabFAQ.classList.remove('bg-gray-200');
+    tabFAQ.classList.add('bg-white');
+    formTabContent.classList.remove('hidden');
+    faqTabContent.classList.add('hidden');
+    orderPaymentSection.classList.remove('hidden');
+  });
+
+  tabFAQ.addEventListener('click', function() {
+    tabFAQ.classList.add('bg-gray-200');
+    tabFAQ.classList.remove('bg-white');
+    tabForm.classList.remove('bg-gray-200');
+    tabForm.classList.add('bg-white');
+    faqTabContent.classList.remove('hidden');
+    formTabContent.classList.add('hidden');
+    orderPaymentSection.classList.add('hidden');
+  });
+  </script>
+</body>
+</html>
