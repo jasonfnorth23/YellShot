@@ -9,6 +9,10 @@ alwaysApply: false
 Defines how the Voice AI system delivers messages using fictional personas, pre-configured voice models, and dynamic follow-up prompts. Ensures every call feels immersive, theatrical, and consistent with YellShot’s surreal, adult tone.
 
 ---
+## Tech Stack
+- Cartesia API Key: sk_car_YigdRus4zPGZ1E7XSsbedb
+
+---
 
 ## 🧠 Conversation Logic (LLM)
 
