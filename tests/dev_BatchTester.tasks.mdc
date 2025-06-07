@@ -1,0 +1,100 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# 🔁 Dev Tasks – Batch Test Generator
+
+Generate multiple fake YellShot messages, run through the full flow, and verify audio output and call status.
+
+---
+
+## 🧪 Batch Config
+
+- [ ] `test-cases.json` example:
+```json
+[
+  {
+    "persona": "Dr. Confession",
+    "message": "I never should've left that night.",
+    "recipient_name": "Jamie",
+    "tone": "regretful"
+  },
+  {
+    "persona": "DJ Regret",
+    "message": "Yo. That diss track? It was about you. My bad.",
+    "recipient_name": "Marcus",
+    "tone": "chaotic"
+  }
+]
+
+## 🔄 Batch Script
+
+run_batch_test.js or .sh
+
+For each case:
+- Call /generate-response
+- Call /generate-voice
+- Call /queue-call
+
+Log S3 URLs, call status, and any errors
+
+## ✅ Output Format
+- Save log to /tests/results/results_TIMESTAMP.json
+- Optionally merge into CSV for tracking
+
+## 🧠 References
+- Use test personas defined in VoiceAI.mdc
+- Runs orchestration from IntegrationEngine.mdc
+
+---
+
+### ✅ `dev_DummyDataSeeder.tasks.mdc`
+
+```md
+# 🌱 Dev Tasks – Dummy Data Seeder
+
+Populate the dev database with fake users, messages, and call records for testing UI and analytics.
+
+---
+
+## 🧪 Dummy Users
+
+- [ ] Create script to seed 10 users with:
+  - Email
+  - Phone
+  - Number of calls sent
+  - Last heard reaction URL
+
+---
+
+## 🗣️ Dummy Messages
+
+- [ ] Insert messages for:
+  - All 5 call types (breakup, roast, apology, etc.)
+  - At least 2 personas per type
+  - Varying lengths and tones
+
+---
+
+## 📁 Dummy Audio
+
+- [ ] Link to placeholder MP3s in S3:
+  - `ai_message.mp3`
+  - `reaction.mp3`
+  - `final_call.mp3`
+- [ ] Provide fallback audio if real MP3 fails to load
+
+---
+
+## 🔧 Admin Use
+
+- [ ] Accessible via CLI or admin dashboard
+- [ ] Add reset button: “Clear dummy data”
+
+---
+
+## 🧠 References
+
+- Complements `QAListenerPage` and `/samples` preview UI
+
