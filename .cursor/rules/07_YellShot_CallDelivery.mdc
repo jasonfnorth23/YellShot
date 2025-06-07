@@ -76,6 +76,14 @@ Internally delay Standard tier calls during quiet hours (10PM–7AM recipient lo
 
 ---
 
+## 📞 Twilio Call Flow
+
+- Reference to Cartesia-generated MP3s
+- Consent & response flow logic
+- Playback + recording coordination
+
+---
+
 ### 🕰️ Quiet Hours Definition
 
 - Quiet Hours = **10:00 PM – 7:00 AM (recipient’s local time)**

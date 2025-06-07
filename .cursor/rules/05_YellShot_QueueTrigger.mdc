@@ -19,6 +19,10 @@ Handles the transition from Stripe-confirmed payment to a queued call task.
 5. Message is enqueued with `expires_at` calculated from delivery tier
 
 ---
+## Orchestration
+- Add orchestration between LLM, Cartesia, and call queue
+
+---
 
 ## 🔁 Queue Status Lifecycle
 

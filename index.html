@@ -24,12 +24,12 @@
         <p class="text-2xl font-bold text-gray-200 leading-tight">All delivered by an anonymous AI Agent<br>— with a ridiculous persona.</p>
       </div>
       <div class="flex-shrink-0 md:mt-0 flex flex-col items-center">
-        <img src="captain-cutdeep-150x150.png" alt="Captain Cutdeep" class="w-40 h-40 object-cover rounded bg-white" />
+        <img id="personaImage" src="images/Captain-Cutdeep-160x160.png" alt="Captain Cutdeep" class="w-40 h-40 object-cover rounded bg-white" />
         <div class="mt-4 flex w-40 space-x-4">
-          <button type="button" class="flex-1 flex items-center justify-center bg-black border border-white text-white rounded p-0 h-16 hover:bg-gray-800 focus:outline-none">
+          <button id="personaPrev" type="button" class="flex-1 flex items-center justify-center bg-black border border-white text-white rounded p-0 h-16 hover:bg-gray-800 focus:outline-none">
             <svg class="w-10 h-10" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><polygon points="6,4 20,12 6,20"/></svg>
           </button>
-          <button type="button" class="flex-1 flex items-center justify-center bg-black border border-white text-white rounded p-0 h-16 hover:bg-gray-800 focus:outline-none">
+          <button id="personaNext" type="button" class="flex-1 flex items-center justify-center bg-black border border-white text-white rounded p-0 h-16 hover:bg-gray-800 focus:outline-none">
             <svg class="w-10 h-10" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><polygon points="4,4 14,12 4,20"/><polygon points="10,4 20,12 10,20"/></svg>
           </button>
         </div>
@@ -81,11 +81,21 @@
         <div class="flex-1 w-full">
           <div class="flex flex-col md:flex-row md:space-x-8 w-full">
             <div class="flex-1 mb-4 md:mb-0">
-              <label for="recipientName" class="block font-bold text-xl text-gray-800 mb-1">Name of Target</label>
+              <label for="recipientName" class="block font-bold text-xl text-gray-800 mb-1 flex items-center">Name of Target
+                <span class="ml-2 relative group cursor-pointer">
+                  <svg class="w-5 h-5 text-gray-400 align-middle" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><text x="12" y="15" text-anchor="middle" font-size="12" fill="currentColor" font-family="Arial">?</text></svg>
+                  <span class="absolute left-6 top-1/2 -translate-y-1/2 w-64 bg-black text-white text-xs rounded px-3 py-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 shadow-lg">The person who will receive your message. We need their name to confirm it is the right target and gain their consent to be recorded.</span>
+                </span>
+              </label>
               <input id="recipientName" name="recipientName" type="text" class="w-full max-w-lg border border-gray-400 rounded px-3 py-2" required placeholder="John Doe" />
             </div>
             <div class="flex-1">
-              <label for="recipientPhone" class="block font-bold text-xl text-gray-800 mb-1">Phone of Target</label>
+              <label for="recipientPhone" class="block font-bold text-xl text-gray-800 mb-1 flex items-center">Phone of Target
+                <span class="ml-2 relative group cursor-pointer">
+                  <svg class="w-5 h-5 text-gray-400 align-middle" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><text x="12" y="15" text-anchor="middle" font-size="12" fill="currentColor" font-family="Arial">?</text></svg>
+                  <span class="absolute left-6 top-1/2 -translate-y-1/2 w-56 bg-black text-white text-xs rounded px-3 py-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 shadow-lg">The phone number that will receive your message.</span>
+                </span>
+              </label>
               <input id="recipientPhone" name="recipientPhone" type="tel" class="w-full max-w-lg border border-gray-400 rounded px-3 py-2" required placeholder="(555) 555-5555" />
             </div>
           </div>
@@ -95,7 +105,12 @@
       <div class="flex items-start mb-6">
         <span class="text-4xl font-bold text-gray-900 mr-4 mt-1 min-w-[2rem] text-left">3</span>
         <div class="flex-1 w-full">
-          <label for="message" class="block font-bold text-xl text-gray-800 mb-1">Message</label>
+          <label for="message" class="block font-bold text-xl text-gray-800 mb-1 flex items-center">Message
+            <span class="ml-2 relative group cursor-pointer">
+              <svg class="w-5 h-5 text-gray-400 align-middle" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><text x="12" y="15" text-anchor="middle" font-size="12" fill="currentColor" font-family="Arial">?</text></svg>
+              <span class="absolute left-6 top-1/2 -translate-y-1/2 w-56 bg-black text-white text-xs rounded px-3 py-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10 shadow-lg">Your message will be delivered verbatim to the target.</span>
+            </span>
+          </label>
           <span class="block text-sm text-gray-500 mb-1">You can stay anonymous — or include your name if you want. 500 character limit.</span>
           <textarea id="message" name="message" maxlength="500" rows="5" class="w-full border border-gray-400 rounded px-3 py-2 resize-none" required></textarea>
           <div class="mt-8 text-center">
@@ -161,7 +176,7 @@
   <!-- Order and Payment Section (only in form tab) -->
   <div id="orderPaymentSection" class="w-full bg-gray-100 border-t border-gray-300 pt-8 pb-2">
     <div class="max-w-2xl mx-auto px-4 mb-8">
-      <h3 class="text-xl font-extrabold text-gray-900 mb-2">Order the YellShot!</h3>
+      <h3 class="text-3xl font-extrabold text-gray-900 mb-2">Order the YellShot!</h3>
       <p class="text-gray-700 mb-2">All call requests are put in a queue and processed on a FIFO basis (first in, first out).</p>
       <p class="italic text-gray-600 mb-4">Pay more to skip the line.</p>
       <div class="flex justify-between items-end mb-2">
@@ -319,6 +334,39 @@
     faqTabContent.classList.remove('hidden');
     formTabContent.classList.add('hidden');
     orderPaymentSection.classList.add('hidden');
+  });
+
+  // Persona image cycling logic
+  const personaImages = [
+    "images/Captain-Cutdeep-160x160.png",
+    "images/The-Empress-160x160.png",
+    "images/Sister-Sorry-160x160.png",
+    "images/Lady-Letdown-160x160.png",
+    "images/Doctor-Gripe-160x160.png",
+    "images/The-Maestro-of-Cheer-160x160.png",
+    "images/Agent-Farewell-160x160.png",
+    "images/Madame-Mwah-160x160.png",
+    "images/Baron-Von-Swoon-160x160.png",
+    "images/Granny-Grudge-160x160.png",
+    "images/Lady Confetti-160x160.png",
+    "images/Mr-Monday-160x160.png",
+    "images/Glitch-Witch-160X160.png",
+    "images/Sir-Nonsense-160x160.png",
+    "images/Reverend-Remorse-160x160.png",
+    "images/Captain-Candlelight-160x160.png"
+  ];
+  let personaIndex = 0;
+  const personaImage = document.getElementById('personaImage');
+  const personaNext = document.getElementById('personaNext');
+  const personaPrev = document.getElementById('personaPrev');
+
+  personaNext.addEventListener('click', function() {
+    personaIndex = (personaIndex + 1) % personaImages.length;
+    personaImage.src = personaImages[personaIndex];
+  });
+  personaPrev.addEventListener('click', function() {
+    personaIndex = (personaIndex - 1 + personaImages.length) % personaImages.length;
+    personaImage.src = personaImages[personaIndex];
   });
   </script>
 </body>

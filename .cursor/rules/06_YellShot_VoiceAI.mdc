@@ -10,6 +10,24 @@ Defines how the Voice AI system delivers messages using fictional personas, pre-
 
 ---
 
+## 🧠 Conversation Logic (LLM)
+
+- LLM deployment details (Ollama / Mixtral / etc.)
+- Persona prompt template structure
+- Endpoint spec: /generate-response
+- Fallback logic / retry patterns
+- Voice model ↔ prompt integration
+
+---
+
+## 🔊 Voice Synthesis – Cartesia API
+- API request format
+- Voice ID config per persona
+- Expected output (MP3 URL)
+- Storage + retry logic
+
+---
+
 ## 🎭 Call Type to Persona Map (Simplified 1M / 1F)
 
 | **Call Type**               | **Male Persona**               | **Female Persona**                |

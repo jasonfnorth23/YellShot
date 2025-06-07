@@ -26,6 +26,14 @@ All form data is autosaved to the backend as a `pending_message` **before** paym
 
 ---
 
+## 🧭 Orchestration Flow
+
+- When APIs are triggered
+- Progress UI flow
+- Error fallback UI
+
+---
+
 ## 📋 Form Field Definitions
 
 | Field              | Type                | Notes                                      |

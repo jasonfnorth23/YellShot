@@ -1,7 +1,21 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
 # 🔁 YellShot PRD – 04: Post-Call Workflow
 
 ## 🎯 Purpose
 Handles what happens after a call completes: saving data, processing reactions, and messaging recipients.
+
+---
+
+## 📁 Audio Management
+
+- Where files live in S3
+- Naming conventions
+- Cleanup policy (optional)
+- Transcription steps if needed
 
 ---
 

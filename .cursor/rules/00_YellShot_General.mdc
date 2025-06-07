@@ -71,14 +71,60 @@ YellShot.com is an anonymous voice-based message delivery platform. Users select
 
 ---
 
-## 🔧 Tech Stack
+## 🔧 Tech Stack & Core Architecture
 
-- Frontend: React / Next.js
-- Backend: Node.js (Express) or Supabase Edge Functions
-- Voice API: Twilio Programmable Voice
-- Payment: Stripe Elements + PaymentIntents
-- Hosting: Vercel or AWS Lightsail
-- Storage: Amazon S3 (audio + logs)
+YellShot.com uses a hybrid architecture that combines high-quality AI voice synthesis, open-source conversational logic, and scalable infrastructure to deliver theatrical phone calls with fictional personas.
+
+---
+
+### 🧠 Conversation Logic
+- **LLM**: Self-hosted open-source LLM (e.g., Mixtral, LLaMA2, OpenChat)
+- **Role**: Drives persona improvisation, identity checks, consent dialogue, “stir-the-pot” questions
+- **Benefit**: Full character control, reduced cost vs. hosted LLMs
+
+---
+
+### 🔊 Voice Engine
+- **TTS Provider**: Cartesia AI
+- **Role**: Converts AI-generated dialogue into expressive MP3s
+- **Reason**: Matches ElevenLabs quality at a fraction of the cost
+
+---
+
+### 📞 Call Delivery
+- **Voice API**: Twilio Programmable Voice
+- **Flow**:
+  - Outbound call initiated
+  - Confirm recipient identity
+  - Ask for verbal consent
+  - Play Cartesia-generated voice message
+  - Ask for reply + follow-up/stir-the-pot question
+  - Record and upload recipient's reaction
+- **Optional**: Transcribe reactions with Whisper or AWS Transcribe
+
+---
+
+### 💳 Payments
+- **Provider**: Stripe Elements + PaymentIntents
+- **Frontend**: Embedded on-page (no redirects)
+- **Functionality**: Supports delivery tiers and queues call post-payment
+
+---
+
+### 📁 Storage
+- **Provider**: Amazon S3
+- **Files Stored**:
+  - `ai_message.mp3`
+  - `reaction.mp3`
+  - `final_call.mp3`
+  - Logs and metadata
+
+---
+
+### 🛠️ Infrastructure
+- **Frontend**: React / Next.js (or lightweight HTML/JS + Tailwind)
+- **Backend**: Node.js (Express) or Supabase Edge Functions
+- **Hosting**: Vercel or AWS Lightsail (or ECS if scaling)
 
 ---
 
