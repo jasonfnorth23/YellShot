@@ -133,90 +133,6 @@ Voice gender must match persona gender unless explicitly marked as neutral or gl
 | elv_076_principal_pain    | The Vice Principal of Pain         | Male       |
 | elv_077_commander_karma   | Commander Karma                    | Male       |
 
----
-
-## 🎬 1. Introduction & Identity Confirmation
-
-"Hello. This is <Persona Name>, calling from <Organization Name>.  
-I have a confidential message intended for <Recipient Name>. Are you <Recipient Name>?"
-
-**If NO:**  
-"Alright — no worries. If you’d like to know more, visit YellShot.com. Have a curious day."
-
-**If YES:**  
-"Thanks for confirming. Just so you know, this call may be recorded for quality assurance —  
-and by continuing, you consent. Ready for the confidential message?"
-
-## 💌 2. Deliver the Message
-
-"Ok — here is the message, just as it was given to me…"  
-
-[Insert user-written message dynamically here]
-
-## 🎤 3. Ask for Reaction
-
-"So… what’s your first reaction to that?"  
-
-[Record recipient’s verbal reaction]
-
-## 🧨 4. Stir the Pot Follow-up
-
-"Let me ask you this — if the roles were reversed, would you have had the guts to say that out loud?"
-
-Using the previous message and recipient's reaction, generate a short, provocative follow-up question or comment that stirs the pot — something that challenges their point of view or adds emotional tension. Keep it under 15 words. Match the persona’s tone: <savage | regretful | clinical | sarcastic | glitchy | cheerful>.
-
-
-## 🔥 5. Escalate with Insult/Challenge
-
-"Because from the sound of it, you’ve been dodging this conversation like it owes you money."
-
-## 📲 6. Tell Them They Can Reply Anonymously (No Consent Needed)
-
-"I’ve also sent you a text. If you've got something to say back —  
-you can reply anonymously, for free."
-
-> (System sends SMS automatically with secure reply link and promo)
-
-- No user confirmation needed  
-- Reply link is preloaded with `message_id` and one-time promo token  
-- SMS copy:
-  ```
-  Want to reply anonymously?  
-  Tap here to respond FREE:  
-  https://yellshot.com/reply/<token>
-  ```
-
----
-
-## 📣 7. Call Closure & Brand Pitch
-
-"This message was delivered by <Persona Name> via YellShot.com —  
-Let AI do the talking. That’s YELL SHOT dot com."
-
----
-
-## 🔐 One-Time Free Reply Logic
-
-### 🎯 Goal
-Prevent abuse of free reply promo while still encouraging first-time engagement.
-
----
-
-### ✅ Who Gets the Free Promo
-
-- Only recipients **who have never been sent a YellShot before**
-- Determined by checking `queue_history` for any previous `recipient_phone`
-
----
-
-### 🚫 Who *Does Not* Get It
-
-- If `recipient_phone` **already exists** in `queue_history` table:
-  - No free reply promo
-  - Regular reply pricing applies (same as sending a YellShot)
-
----
-
 ### 📊 Database Logic (Pseudocode)
 
 ```sql
@@ -273,7 +189,7 @@ WHERE recipient_phone = '<number>'
 
 ## 🔊 Voice Synthesis Engine
 
-- Uses ElevenLabs API for text-to-speech.
+- Uses Cartesia AI API for text-to-speech.
 - Each prompt is composed using:
 
 ```text
@@ -295,16 +211,6 @@ This is Miss Closure, calling from the Bureau of Second Chances. I have a confid
 
 ---
 
-## 🔁 Follow-Up Logic
-
-- After delivering the message, the AI voice asks:
-- “So.. yea that's the entire message.  Ummm... thoughts?”
-
-- A second persona-specific question based on call type (e.g., “Would you take them back?” or “If they were here, what would you say?”)
-- The recording of the call is sent to the sender so the goal is to provoke the recipient to speak now bluntly and not hold back.
-
----
-
 ## 📦 Persona Registration Schema
 
 ```json
@@ -320,7 +226,7 @@ This is Miss Closure, calling from the Bureau of Second Chances. I have a confid
 
 ---
 
-## 🔊 ElevenLabs API Configuration
+## 🔊 Cartesia AI API Configuration
 
 | **Setting**         | **Default** | **Notes**                                  |
 |---------------------|-------------|--------------------------------------------|
@@ -342,36 +248,6 @@ This is Miss Closure, calling from the Bureau of Second Chances. I have a confid
 
 **Example:**  
 `https://cdn.yellshot.com/audio/92f883ac/final_call.mp3`
-
----
-
-## 📞 Full Call Flow Sequence
-
-1. **Introduction & Identity Confirmation**  
-   > “Hello. This is <Persona>, calling from <Agency>. I have a confidential message for <Name>. Are you <Name>?”
-
-2. **Recording Disclosure**  
-   > “This call may be recorded — and by continuing, you consent. Ready for the message?”
-
-3. **Deliver the Message**  
-   > “Ok — here is the confidential message, just as it was given to me…”  
-   _[Insert dynamic message]_
-
-4. **Ask for Reaction**  
-   > “So… what’s your first reaction to that?”  
-   _[Record recipient’s response]_
-
-5. **Stir the Pot**  
-   > AI generates a tone-matched follow-up based on message and reaction.
-
-6. **Escalation Prompt**  
-   > “You’ve been dodging this like it owes you rent.”
-
-7. **Offer Anonymous Reply Link**  
-   > “Want me to text you a link to reply anonymously?”
-
-8. **Close the Call**  
-   > “This message was delivered via YellShot.com — let AI do the talking. Talk shit. Stay anonymous.”
 
 ---
 

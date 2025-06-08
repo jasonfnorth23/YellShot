@@ -5,6 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
 const voiceMap = require('./voiceMap');
+const ConversationManager = require('./conversationManager');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,6 +17,8 @@ if (!fs.existsSync(CALLS_DIR)) {
 }
 
 console.log('✅ Loaded Cartesia API Key:', process.env.CARTESIA_API_KEY ? 'YES' : 'NO');
+
+const conversationManager = new ConversationManager(process.env.CARTESIA_API_KEY, CALLS_DIR);
 
 app.use(express.json());
 app.use('/calls', express.static(CALLS_DIR));
@@ -46,7 +49,7 @@ app.post('/generate-voice', async (req, res) => {
           encoding: 'pcm_f32le',
           sample_rate: 44100
         },
-        language: 'fr'
+        language: 'en'
       },
       {
         headers: {
@@ -97,6 +100,46 @@ app.post('/generate-voice', async (req, res) => {
     }
 
     res.status(500).json({ error: 'Cartesia TTS request failed' });
+  }
+});
+
+app.post('/generate-conversation', async (req, res) => {
+  const {
+    personaName,
+    agencyName,
+    targetName,
+    privateMessage,
+    voiceId
+  } = req.body;
+
+  if (!personaName || !agencyName || !targetName || !privateMessage || !voiceId) {
+    return res.status(400).json({ error: 'Missing required parameters' });
+  }
+
+  try {
+    const callId = Date.now();
+    const result = await conversationManager.generateFullConversation({
+      personaName,
+      agencyName,
+      targetName,
+      privateMessage,
+      voiceId,
+      callId
+    });
+
+    // Convert file paths to URLs
+    const sequence = result.sequence.map(item => ({
+      ...item,
+      url: `http://localhost:${PORT}/calls/${item.file}`
+    }));
+
+    res.json({
+      callId,
+      sequence
+    });
+  } catch (error) {
+    console.error('❌ Conversation generation error:', error);
+    res.status(500).json({ error: 'Failed to generate conversation' });
   }
 });
 
